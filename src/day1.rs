@@ -1,4 +1,4 @@
-use std::{cmp::{min, max}, collections::btree_map::Range};
+use aoc_runner_derive::{aoc, aoc_generator};
 
 #[derive(Debug)]
 enum Direction {
