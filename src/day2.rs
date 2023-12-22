@@ -13,8 +13,6 @@ fn input_generator(input: &str) -> Vec<String> {
 #[aoc(day2, part1)]
 fn solve_part1(input: &Vec<String>) -> String {
 
-    let grid=vec![vec![1,2,3,4,5,6,7,8,9]];
-
     let mut x=1;
     let mut y=1;
 
