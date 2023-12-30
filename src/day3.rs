@@ -21,7 +21,7 @@ impl fmt::Display for Triangle {
         write!(f, "Triangle a:{} b:{} c:{} : Valid:{}", self.a, self.b, self.c, self.is_valid())
     }
 }
-
+/*
 #[aoc_generator(day3, part1)]
 fn input_generator(input: &str) -> Vec<Triangle> {
     let mut v:Vec<Triangle>=Vec::new();
@@ -39,13 +39,13 @@ fn input_generator(input: &str) -> Vec<Triangle> {
     }
     v
 }
-
- 
+ */
+/* 
 #[aoc(day3, part1)]
 fn solve_part1(input: &Vec<Triangle>) -> u32 {
     input.iter().filter(|t| t.is_valid()).count() as u32
 }
-
+*/
 fn get_triangle(line: &str) -> Vec<u32> {
     line.split_whitespace()
         .map(|l| l.parse::<u32>().unwrap())
