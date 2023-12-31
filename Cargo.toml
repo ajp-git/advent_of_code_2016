@@ -8,6 +8,7 @@ authors = ["Alain Jean PARES (ajp@p997.net"]
 aoc-runner = "0.3.0"
 aoc-runner-derive ="0.3.0"
 regex="1.10.2"
+md5="0.7.0"
 
 [dev-dependencies]
 cargo-aoc="0.3.7"
