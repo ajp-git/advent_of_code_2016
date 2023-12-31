@@ -1,6 +1,4 @@
 use core::fmt;
-use std::fmt::write;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[derive(Debug)]

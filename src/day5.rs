@@ -1,7 +1,4 @@
-use std::io::SeekFrom;
-
 use aoc_runner_derive::{aoc, aoc_generator};
-use md5::compute;
 
 #[aoc_generator(day5)]
 fn input_generator(input: &str) -> String {
