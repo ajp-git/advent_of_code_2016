@@ -35,7 +35,7 @@ fn solve_part2(input: &String) -> String {
     
     let mut index:u32=0;
     let mut count:u32=0;
-    let mut out:String=String::new();
+    let out:String=String::new();
     let mut v_out:Vec<char>=vec![' ';8];
 
     while v_out.iter().any(|&c| c==' ' ) {
