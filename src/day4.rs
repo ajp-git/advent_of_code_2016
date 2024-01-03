@@ -119,7 +119,6 @@ fn solve_part2(input: &Vec<String>) -> u32 {
     v_names.push(Name { name: na, number: nu, letters: le });
  }
 
- let mut total:u32=0;
  for name in v_names {
     if name.clone().decrypt()=="northpole object storage" {
         return name.number

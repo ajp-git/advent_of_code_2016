@@ -1,7 +1,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day5)]
-fn input_generator(input: &str) -> String {
+fn input_generator(_input: &str) -> String {
     "ffykfhsq".to_string()
 }
 
@@ -35,7 +35,6 @@ fn solve_part2(input: &String) -> String {
     
     let mut index:u32=0;
     let mut count:u32=0;
-    let out:String=String::new();
     let mut v_out:Vec<char>=vec![' ';8];
 
     while v_out.iter().any(|&c| c==' ' ) {

@@ -33,7 +33,7 @@ impl Screen {
 
 
     fn rotate_column(self: &mut Self, x:usize, count:usize){
-        for i in 0..count {
+        for _ in 0..count {
             self.rotate_column_once(x);            
         }
     }
@@ -67,7 +67,7 @@ impl Screen {
     }
 
     fn rotate_row(self: &mut Self, y:usize, count:usize){
-        for i in 0..count {
+        for _ in 0..count {
             self.rotate_row_once(y);            
         }
     }

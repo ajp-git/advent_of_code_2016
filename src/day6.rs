@@ -46,7 +46,7 @@ fn solve_part2(input: &Vec<String>) -> String {
                 v_occ.insert(c, 1);
             }
         }
-        let c_max = v_occ.iter().filter(|&(k,v)|*v>=1).min_by_key(|&(_,v)| v).unwrap();
+        let c_max = v_occ.iter().filter(|&(_,v)|*v>=1).min_by_key(|&(_,v)| v).unwrap();
         out.push(*c_max.0);
     }
     out
