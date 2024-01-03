@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use regex::Regex;
@@ -12,78 +12,38 @@ fn input_generator(input: &str) -> Vec<String> {
     }
     v
 }
-#[derive(Clone, Debug)]
-struct Bot{
-    id:u32,
-    low_bot:Option<u32>,
-    high_bot:Option<u32>,
-    low_output:Option<u32>,
-    high_output:Option<u32>,
-    low_val:Option<u32>,
-    high_val:Option<u32>
+
+#[derive(Debug)]
+enum BotDestination {
+    Bot(u32),
+    Bin(u32),
 }
 
-impl Bot {
-    fn new(id: u32) -> Bot{
-        return Bot{id, low_bot: None, high_bot:None, low_output: None, high_output:None, low_val:None, high_val:None};
-    }
-
-    fn run(&mut self, h_bots: &mut HashMap<u32, Bot>) -> Option<u32> {
-        println!("Running bot {}", self.id);
-    
-        let mut actions = Vec::new();
-    
-        if self.low_val.is_some() && self.high_val.is_some() {
-            if self.low_val.unwrap() == 17 && self.high_val.unwrap() == 61 {
-                return Some(self.id);
-            }
-    
-            if let Some(lb) = self.low_bot {
-                actions.push((lb, self.low_val.unwrap()));
-                self.low_val = None;
-            }
-    
-            if let Some(hb) = self.high_bot {
-                actions.push((hb, self.high_val.unwrap()));
-                self.high_val = None;
-            }
+impl BotDestination {
+    fn new (kind: &str, val: u32) -> BotDestination {
+        match kind {
+            "bot" => BotDestination::Bot(val),
+            "output" => BotDestination::Bin(val),
+            _ => panic!("Imppossible kind"),
         }
-    
-        for (bot_id, value) in actions {
-            if let Some(bot) = h_bots.get_mut(&bot_id) {
-                if let Some(ret) = bot.set_value(value, h_bots) {
-                    return Some(ret);
-                }
-            }
-        }
-    
-        None
     }
-    
-
-    fn set_value(&mut self, val: u32, h_bots:&mut HashMap<u32, Bot>) -> Option<u32>{
-        if let Some(low) = self.low_val {
-            if low<val{
-                self.high_val=Some(val);
-                println!("Setting value high {} for bot {}", val, self.id);
-            } else {
-                self.high_val=self.low_val;
-                println!("Setting value low {} for bot {}", val, self.id);
-                self.low_val=Some(val);
-            }
-        } else {
-            println!("Setting initial value low {} for bot {}", val, self.id);
-            self.low_val=Some(val);
-        }
-        self.run(h_bots)
-    }
-    
 }
+
+#[derive(Debug)]
+struct BotCommand {
+    from: u32,
+    to_low: BotDestination,
+    to_high: BotDestination,
+}
+
 #[aoc(day10, part1)]
 fn solve_part1(input: &Vec<String>) -> u32 {
 
-    let mut h_bots:HashMap<u32,Bot>=HashMap::new();
-    let re_val = Regex::new(r"value (\d*) goes to bot (\d)").unwrap();
+    let mut h_bots:HashMap<u32, HashSet<u32>>=HashMap::new();
+    let mut h_bins:HashMap<u32, HashSet<u32>>=HashMap::new();
+    let mut v_commands:Vec<BotCommand>=Vec::new();
+
+    let re_val = Regex::new(r"value (\d*) goes to bot (\d*)").unwrap();
     let re_bot_gives = Regex::new(r"bot (\d*) gives low to (bot|output) (\d*) and high to (bot|output) (\d*)").unwrap();
     for line in input{
         println!("\n{line}");
@@ -91,44 +51,163 @@ fn solve_part1(input: &Vec<String>) -> u32 {
         if let Some(caps) = re_val.captures(&line) {
             let dest_bot = caps[2].parse::<u32>().unwrap();
             let dest_val = caps[1].parse::<u32>().unwrap();
+            h_bots.entry(dest_bot).or_default().insert(dest_val);
 
-            if let Some(mut bot) = h_bots.remove(&dest_bot) {
-                let ret = bot.set_value(dest_val, &mut h_bots);
-                h_bots.insert(dest_bot, bot); // Put the bot back after modification
-                if ret.is_some() { return ret.unwrap(); }
-            } else {
-                let mut t_bot = Bot::new(dest_bot);
-                let ret = t_bot.set_value(dest_val, &mut h_bots);
-                h_bots.insert(dest_bot, t_bot);
-                if ret.is_some() { return ret.unwrap(); }
-            }
         } else if let Some(caps) = re_bot_gives.captures(&line) {
             let curr_bot_id=caps[1].parse::<u32>().unwrap();
-            let mut curr_bot=h_bots.get_mut(&curr_bot_id).unwrap().clone();
-            match &caps[2] { // Low value
-                "bot" => {
-                    let dest_bot_id=caps[3].parse::<u32>().unwrap();
-                    let mut dest_bot=h_bots.entry(dest_bot_id).or_insert_with(|| Bot::new(dest_bot_id));
-                    curr_bot.low_bot=Some(dest_bot_id);
-                    
-                },
-                "output" => {},
-                _ => { panic!("Unknown recipient {}", line);},
-            }
-            match &caps[4] { // Low value
-                "bot" => {
-                    let dest_bot_id=caps[5].parse::<u32>().unwrap();
-                    
-                    let mut dest_bot=h_bots.entry(dest_bot_id).or_insert_with(|| Bot::new(dest_bot_id));
-                    curr_bot.high_bot=Some(dest_bot_id);
-                    
-                },
-                "output" => {},
-                _ => { panic!("Unknown recipient {}", line);},
-            }
-            curr_bot.run(&mut h_bots);
+
+            v_commands.push(BotCommand{
+                from:curr_bot_id,
+                to_low:BotDestination::new(&caps[2], caps[3].parse::<u32>().unwrap()),
+                to_high:BotDestination::new(&caps[4], caps[5].parse::<u32>().unwrap() )});
+            
+
         }
     }
-    println!("Hash : {:?}", h_bots);
-    0
+//    println!("Hash : {:?}", h_bots);
+//    println!("Commands : {:?}", v_commands);
+
+
+    let mut found_part1:Option<u32>=None;
+    let mut max_cycles=10_000;
+
+    loop {
+        print!("\rCycle {}", max_cycles);
+        max_cycles-=1;
+        if max_cycles==0{break;}
+
+        for command in &v_commands {
+            if let Some(vals) = h_bots.get_mut(&command.from) {
+                if vals.len()>=2 {
+                    let low_val=*vals.iter().min().unwrap();
+                    let high_val=*vals.iter().max().unwrap();
+                    if found_part1.is_none() && low_val==17 && high_val==61 {
+                        found_part1=Some(command.from);
+                    }
+
+                    vals.remove(&low_val);
+                    vals.remove(&high_val);
+
+                    match command.to_low {
+                        BotDestination::Bot(bot) => { 
+                            h_bots.entry(bot).or_default().insert(low_val);
+
+                        },
+                        BotDestination::Bin(bin) => {
+                            h_bins.entry(bin).or_default().insert(low_val);
+
+                        }
+                        
+                    };
+                    match command.to_high{
+                        BotDestination::Bot(bot) => { 
+                            h_bots.entry(bot).or_default().insert(high_val);
+
+                        },
+                        BotDestination::Bin(bin) => {
+                            h_bins.entry(bin).or_default().insert(high_val);
+
+                        }
+                        
+                    };
+                }
+            }
+        }
+        if found_part1.is_some(){
+            break;
+        }
+    }
+    found_part1.unwrap()
+}
+
+#[aoc(day10, part2)]
+fn solve_part2(input: &Vec<String>) -> u32 {
+
+    let mut h_bots:HashMap<u32, HashSet<u32>>=HashMap::new();
+    let mut h_bins:HashMap<u32, HashSet<u32>>=HashMap::new();
+    let mut v_commands:Vec<BotCommand>=Vec::new();
+
+    let re_val = Regex::new(r"value (\d*) goes to bot (\d*)").unwrap();
+    let re_bot_gives = Regex::new(r"bot (\d*) gives low to (bot|output) (\d*) and high to (bot|output) (\d*)").unwrap();
+    for line in input{
+        println!("\n{line}");
+
+        if let Some(caps) = re_val.captures(&line) {
+            let dest_bot = caps[2].parse::<u32>().unwrap();
+            let dest_val = caps[1].parse::<u32>().unwrap();
+            h_bots.entry(dest_bot).or_default().insert(dest_val);
+
+        } else if let Some(caps) = re_bot_gives.captures(&line) {
+            let curr_bot_id=caps[1].parse::<u32>().unwrap();
+
+            v_commands.push(BotCommand{
+                from:curr_bot_id,
+                to_low:BotDestination::new(&caps[2], caps[3].parse::<u32>().unwrap()),
+                to_high:BotDestination::new(&caps[4], caps[5].parse::<u32>().unwrap() )});
+            
+
+        }
+    }
+//    println!("Hash : {:?}", h_bots);
+//    println!("Commands : {:?}", v_commands);
+
+
+    let mut found_part1:Option<u32>=None;
+    let mut max_cycles=10_000;
+
+    loop {
+        print!("\rCycle {}", max_cycles);
+        max_cycles-=1;
+        if max_cycles==0{break;}
+
+        for command in &v_commands {
+            if let Some(vals) = h_bots.get_mut(&command.from) {
+                if vals.len()>=2 {
+                    let low_val=*vals.iter().min().unwrap();
+                    let high_val=*vals.iter().max().unwrap();
+                    if found_part1.is_none() && low_val==17 && high_val==61 {
+                        found_part1=Some(command.from);
+                    }
+
+                    vals.remove(&low_val);
+                    vals.remove(&high_val);
+
+                    match command.to_low {
+                        BotDestination::Bot(bot) => { 
+                            h_bots.entry(bot).or_default().insert(low_val);
+
+                        },
+                        BotDestination::Bin(bin) => {
+                            h_bins.entry(bin).or_default().insert(low_val);
+
+                        }
+                        
+                    };
+                    match command.to_high{
+                        BotDestination::Bot(bot) => { 
+                            h_bots.entry(bot).or_default().insert(high_val);
+
+                        },
+                        BotDestination::Bin(bin) => {
+                            h_bins.entry(bin).or_default().insert(high_val);
+
+                        }
+                        
+                    };
+                }
+            }
+        }
+    }
+    println!("Bin 0 :{:?}", h_bins.get(&0));
+    println!("Bin 1 :{:?}", h_bins.get(&1));
+    println!("Bin 2 :{:?}", h_bins.get(&2));
+
+    // Retrieve the values from bins 0, 1, and 2
+    let bin0_value = *h_bins.get(&0).unwrap().iter().next().unwrap();
+    let bin1_value = *h_bins.get(&1).unwrap().iter().next().unwrap();
+    let bin2_value = *h_bins.get(&2).unwrap().iter().next().unwrap();
+
+    let product = bin0_value * bin1_value * bin2_value;
+
+    product // Return the product
 }
