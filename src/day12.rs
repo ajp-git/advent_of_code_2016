@@ -2,7 +2,6 @@ use std::collections::{HashMap};
 
 use regex::Regex;
 
-
 #[aoc_generator(day12)]
 fn input_generator(input: &str) -> Vec<String> {
 
