@@ -23,7 +23,29 @@ fn solve_part1(input: &u32) -> u32 {
         }
     }
     println!();
-    bfs(Coord { x: 31, y: 39, cost: 0 })
+    bfs_part1(Coord { x: 31, y: 39, cost: 0 })
+    //bfs(Coord { x: 7, y: 4, cost: 0 })
+}
+
+#[aoc(day13, part2)]
+fn solve_part2(input: &u32) -> u32 {
+    print!("   ");
+    for x in 0..10{
+        print!("{x:02} ");
+    }
+    for y in 0..10{
+        println!();
+        for x in 0..10 {
+            if x == 0 {
+                print!("{y:02} ");
+            }
+            let coo =Coord{x:x, y:y, cost:0};
+            let bval=if coo.is_valid() { " . "} else { " # " };
+            print!("{}", bval)
+        }
+    }
+    println!();
+    bfs_part2(Coord { x: 200, y: 200, cost: 0 })
     //bfs(Coord { x: 7, y: 4, cost: 0 })
 }
 #[derive(Debug,Clone)]
@@ -99,7 +121,7 @@ impl Coord {
 
 // bfs returns max_cost to goal
 
-fn bfs (goal:Coord) -> u32 {
+fn bfs_part1 (goal:Coord) -> u32 {
     let mut queue:VecDeque<Coord>=VecDeque::new();
     let mut explored:Vec<Coord>=Vec::new();
     let mut parent:Vec<Coord>=Vec::new();
@@ -122,6 +144,42 @@ fn bfs (goal:Coord) -> u32 {
                 explored.push(a.clone());
                 queue.push_back(a.clone());
 //                queue.retain(|q|q!=&a);
+            }
+        }
+    }
+    u32::MAX
+}
+
+
+fn bfs_part2 (goal:Coord) -> u32 {
+    let mut queue:VecDeque<Coord>=VecDeque::new();
+    let mut explored:Vec<Coord>=Vec::new();
+    let mut parent:Vec<Coord>=Vec::new();
+
+    let root=Coord{x:1, y:1, cost:0};
+    queue.push_back(root.clone());
+    explored.push(root);
+
+    let mut total_locations=1;
+
+    while !queue.is_empty() {
+        let v=queue.pop_front().unwrap();
+        println!("Exploring {};{}", v.x, v.y);
+
+        if v==goal {
+            return v.cost;
+        }
+
+        let adj = v.adjacents();
+        for a in adj {
+            if !explored.contains(&a) && a.is_valid(){
+                total_locations+=1;
+                explored.push(a.clone());
+                queue.push_back(a.clone());
+//                queue.retain(|q|q!=&a);
+            }
+            if v.cost==50 {
+                return total_locations;
             }
         }
     }
