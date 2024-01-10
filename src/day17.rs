@@ -1,5 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::cmp::max;
 
 #[aoc_generator(day17)]
 fn input_generator(input: &str) -> String {
@@ -16,7 +17,7 @@ fn solve_part1(input: &String) -> String {
 
 #[aoc(day17, part2)]
 fn solve_part2(input: &String) -> u32 {
-    0
+    bfs_day17_part2(input.clone())
 }
 #[derive(Clone, PartialEq, Debug)]
 struct Coord {
@@ -46,7 +47,7 @@ impl Coord {
         if matches!(doors.next().unwrap(), 'b'..='f') && self.x<3 {
             v.push(Coord { init: self.init.clone(), x: self.x+1, y: self.y, path: format!("{}R", self.path) });
         }
-        println!("Exploring {};{} : {} doors with hash :\t{} and path :\t{}", self.x,self.y, v.len(),digest.clone(), self.path);
+//        println!("Exploring {};{} : {} doors with hash :\t{} and path :\t{}", self.x,self.y, v.len(),digest.clone(), self.path);
         v
     }
 }
@@ -61,7 +62,7 @@ fn bfs_day17_part1 (init:String) -> String {
 
     while !queue.is_empty() {
         let v=queue.pop_front().unwrap();
-        println!("Exploring {};{}", v.x, v.y);
+//        println!("Exploring {};{}", v.x, v.y);
 
         if v.x==3 && v.y==3 {
             return v.path;
@@ -77,6 +78,37 @@ fn bfs_day17_part1 (init:String) -> String {
     }
     "".to_string()
 }
+
+fn bfs_day17_part2 (init:String) -> u32 {
+    let mut queue:VecDeque<Coord>=VecDeque::new();
+    let mut explored:Vec<Coord>=Vec::new();
+    let mut longest:u32=0;
+
+    let root=Coord{x:0, y:0, init, path:"".to_string()};
+    queue.push_back(root.clone());
+    explored.push(root);
+
+    while !queue.is_empty() {
+        let v=queue.pop_front().unwrap();
+//        println!("Exploring {};{}", v.x, v.y);
+
+        if v.x==3 && v.y==3 {
+            longest=max(longest,v.path.len() as u32);
+            print!("\rLongest:{}", longest);
+        } else {
+            let adj = v.adjacents();
+            for a in adj {
+                if !explored.contains(&a){
+                    explored.push(a.clone());
+                    queue.push_back(a.clone());
+                }
+            }                
+        }
+
+    }
+    longest
+}
+
 /*
 #[cfg(test)]
 mod test {
