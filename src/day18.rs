@@ -12,7 +12,6 @@ fn solve_part1(input: &String) -> u32 {
 //    let input=".^^.^.^^^^".to_string();
     println!("Using input :\t\t\t{}", input.clone());
 
-    let mut v:Vec<String>=Vec::new();
     let mut current_line=input.clone();
     let mut safe_tiles = current_line.chars().filter(|&c|c=='.').count() as u32;
 
@@ -31,9 +30,9 @@ fn solve_part1(input: &String) -> u32 {
                 _=>new_line.push('.'),
             }
         }
-        print!("Iter {i} :\t{}", &new_line);
+//        print!("Iter {i} :\t{}", &new_line);
         current_line=new_line;//(&new_line[1..new_line.len()]).to_string();
-        println!("\t{}", &current_line);
+//        println!("\t{}", &current_line);
         safe_tiles+=current_line.chars().filter(|&c|c=='.').count() as u32;
 
     }
@@ -41,6 +40,32 @@ fn solve_part1(input: &String) -> u32 {
 }
 
 #[aoc(day18, part2)]
-fn solve_part2(input: &String) -> u32 {
-    0
+fn solve_part2(input: &String) -> u64 {
+    println!("Using input :\t\t\t{}", input.clone());
+
+    let mut current_line=input.clone();
+    let mut safe_tiles:u64 = current_line.chars().filter(|&c|c=='.').count() as u64;
+
+
+    for i in 1..40000 {
+        current_line=format!(".{}.",current_line);
+        let v_line:Vec<char>=current_line.chars().collect();
+        let mut new_line=String::new();
+
+        for j in 1..current_line.len()-1 {
+            match (v_line[j-1], v_line[j], v_line[j+1]) {
+                ('^','^','.') | 
+                ('.','^','^') |
+                ('^', '.', '.') |
+                ( '.', '.', '^')   => new_line.push('^'),
+                _=>new_line.push('.'),
+            }
+        }
+//        print!("Iter {i} :\t{}", &new_line);
+        current_line=new_line;//(&new_line[1..new_line.len()]).to_string();
+//        println!("\t{}", &current_line);
+        safe_tiles+=current_line.chars().filter(|&c|c=='.').count() as u64;
+
+    }
+    safe_tiles
 }
