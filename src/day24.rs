@@ -50,11 +50,38 @@ fn solve_part1(input: &Vec<Vec<char>>) -> u32 {
     ).min().unwrap()
 }
 
+
+#[aoc(day24, part2)]
+fn solve_part2(input: &Vec<Vec<char>>) -> u32 {
+
+    let parcours=('1'..='7').collect::<Vec<char>>();
+    let coords:Vec<Coord>=('0'..='7').map(|c|find_value_coord(input, c)).collect();
+    let start=find_value_coord(input, '0');
+
+    println!("Start :{:?}", start);
+    println!("Coords :{:?}", coords);
+
+    let digits = "1234567"; // Digits to permute
+    let mut permutations = digits.chars().permutations(digits.len())
+        .map(|p| {
+            let mut s = String::from("0"); // Start with '0'
+            s.extend(p.into_iter()); // Extend the string with the permutation of '1' through '6'
+            s.push('0');
+            s
+        });
+
+    permutations.map(|p|{
+        get_path_len(p, &coords, &input)
+    }
+        
+    ).min().unwrap()
+}
+
 fn get_path_len (p: String, coords: &Vec<Coord>, grid:&Vec<Vec<char>>) -> u32{
     
     let mut last_pt=&coords[0];
     let mut total:u32=0;
-    for c in p[1..=7].chars() {
+    for c in p[1..].chars() {
 //        println!("Looking for char {} so {}", c, c as usize-'0' as usize);
         let goal=&coords[c as usize -'0' as usize];
         total+=bfs_part1(&last_pt, goal, grid);
